@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+   name: backend-service
+   namespace: shop
+   labels:
+     app: backend-service
+      
+spec:
+#   type: LoadBalancer
+   ports:
+     - protocol: TCP
+       port: 3000
+       targetPort: 3000
+   selector:
+     app: backend-pod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: shop
+  labels:
+    app: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-pod
+  
+  template:
+    metadata:
+      name: backend-pod
+      labels:
+        app: backend-pod
+    spec:
+      containers:
+      - name: blog-node-container
+        image: hub.webuygulama.site/shop-backend:1.0.7
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MONGO_URI
+          value: mongodb://:@db-mongodb-0.db-mongodb-headless.shop.svc.cluster.local/shopDB?authSource=admin # Set database username and password
+        ports:
+        - containerPort: 3000
+      imagePullSecrets:
+      - name: regcred
+      
